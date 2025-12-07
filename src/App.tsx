@@ -6,19 +6,31 @@ function App() {
   const [note, setNote] = useState<string>('')
   const [count, setCount] = useState(0)
 
+  // new: optional datetime input state
+  const [dateTime, setDateTime] = useState<string>('')
+
   const [entries, setEntries] = useState<{ id: number; glucose: number; note: string; ts: number }[]>([])
   const [showTable, setShowTable] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (glucose.trim() === '') return
-    const entry = { id: Date.now(), glucose: Number(glucose), note, ts: Date.now() }
+
+    // use provided datetime if present, otherwise current time
+    let ts = Date.now()
+    if (dateTime.trim() !== '') {
+      const parsed = new Date(dateTime).getTime()
+      if (!isNaN(parsed)) ts = parsed
+    }
+
+    const entry = { id: Date.now(), glucose: Number(glucose), note, ts }
     console.log('Submitted entry:', entry)
 
     setEntries(prev => [entry, ...prev])
     setCount(c => c + 1)
     setGlucose('')
     setNote('')
+    setDateTime('') // reset optional field
   }
 
   const toggleTable = () => setShowTable(s => !s)
@@ -51,6 +63,19 @@ function App() {
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="e.g. before breakfast"
+              style={{ marginLeft: 8 }}
+            />
+          </label>
+        </div>
+
+        {/* optional date/time input */}
+        <div style={{ marginTop: 8 }}>
+          <label>
+            Date & Time (optional):
+            <input
+              type="datetime-local"
+              value={dateTime}
+              onChange={e => setDateTime(e.target.value)}
               style={{ marginLeft: 8 }}
             />
           </label>
