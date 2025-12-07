@@ -1,44 +1,43 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
+import ReadingsPage from './ReadingsPage'
+import type { Entry } from './ReadingsPage'
 
-function App() {
+function Home({
+  entries,
+  setEntries,
+  setCount,
+}: {
+  entries: Entry[]
+  setEntries: React.Dispatch<React.SetStateAction<Entry[]>>
+  setCount: React.Dispatch<React.SetStateAction<number>>
+}) {
   const [glucose, setGlucose] = useState<string>('')
   const [note, setNote] = useState<string>('')
-  const [count, setCount] = useState(0)
-
-  // new: optional datetime input state
   const [dateTime, setDateTime] = useState<string>('')
-
-  const [entries, setEntries] = useState<{ id: number; glucose: number; note: string; ts: number }[]>([])
-  const [showTable, setShowTable] = useState(false)
+  const navigate = useNavigate()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (glucose.trim() === '') return
 
-    // use provided datetime if present, otherwise current time
     let ts = Date.now()
     if (dateTime.trim() !== '') {
       const parsed = new Date(dateTime).getTime()
       if (!isNaN(parsed)) ts = parsed
     }
 
-    const entry = { id: Date.now(), glucose: Number(glucose), note, ts }
-    console.log('Submitted entry:', entry)
-
+    const entry: Entry = { id: Date.now(), glucose: Number(glucose), note, ts }
     setEntries(prev => [entry, ...prev])
     setCount(c => c + 1)
     setGlucose('')
     setNote('')
-    setDateTime('') // reset optional field
+    setDateTime('')
   }
 
-  const toggleTable = () => setShowTable(s => !s)
-
-  const formatTime = (ts: number) => new Date(ts).toLocaleString()
-
   return (
-    <div className="App" style={{ padding: 20 }}>
+    <div style={{ padding: 20 }}>
       <h1>Blood Glucose Tracker</h1>
 
       <form onSubmit={handleSubmit}>
@@ -68,7 +67,6 @@ function App() {
           </label>
         </div>
 
-        {/* optional date/time input */}
         <div style={{ marginTop: 8 }}>
           <label>
             Date & Time (optional):
@@ -83,42 +81,30 @@ function App() {
 
         <div style={{ marginTop: 12 }}>
           <button type="submit">Add Reading</button>
-          <button type="button" onClick={toggleTable} style={{ marginLeft: 8 }}>
-            {showTable ? 'Hide Readings' : 'Show Readings'}
+          <button type="button" onClick={() => navigate('/readings')} style={{ marginLeft: 8 }}>
+            Show Readings
           </button>
         </div>
       </form>
-
-      <p style={{ marginTop: 12 }}>Readings added: {count}</p>
-
-      {showTable && (
-        <div style={{ marginTop: 16 }}>
-          {entries.length === 0 ? (
-            <p>No entries yet.</p>
-          ) : (
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Time</th>
-                  <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>Glucose (mg/dL)</th>
-                  <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map(e => (
-                  <tr key={e.id}>
-                    <td style={{ border: '1px solid #eee', padding: 8 }}>{formatTime(e.ts)}</td>
-                    <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'right' }}>{e.glucose}</td>
-                    <td style={{ border: '1px solid #eee', padding: 8 }}>{e.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
     </div>
   )
 }
 
-export default App
+export default function App() {
+  const [entries, setEntries] = useState<Entry[]>([])
+  const [count, setCount] = useState(0)
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home entries={entries} setEntries={setEntries} setCount={setCount} />} />
+        <Route path="/readings" element={<ReadingsPage entries={entries} onBack={() => window.history.back()} />} />
+      </Routes>
+
+      {/* a simple footer showing total added */}
+      <div style={{ position: 'fixed', bottom: 12, right: 12, fontSize: 12 }}>
+        Readings added: {count}
+      </div>
+    </BrowserRouter>
+  )
+}
