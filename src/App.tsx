@@ -19,6 +19,8 @@ function Home({
   const navigate = useNavigate()
 
   const handleSubmit = (e: React.FormEvent) => {
+    alert('Debug: handleSubmit called')
+    console.log('Submitting new glucose entry')
     e.preventDefault()
     if (glucose.trim() === '') return
 
@@ -29,11 +31,40 @@ function Home({
     }
 
     const entry: Entry = { id: Date.now(), glucose: Number(glucose), note, ts }
-    setEntries(prev => [entry, ...prev])
-    setCount(c => c + 1)
-    setGlucose('')
-    setNote('')
-    setDateTime('')
+    
+    const payload = {
+      value: Number(glucose),
+      timestamp: new Date(ts).toISOString(),
+      description: note,
+    }
+    console.log('Sending POST request with payload:', payload)
+
+    // POST to backend
+    fetch('http://localhost:8080/api/entries', {
+      method: 'POST',
+      headers: {
+        'Accept': '*/*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        value: Number(glucose),
+        timestamp: new Date(ts).toISOString(),
+        description: note,
+      }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then(data => {
+        console.log('Backend response:', data)
+        setEntries(prev => [entry, ...prev])
+        setCount(c => c + 1)
+        setGlucose('')
+        setNote('')
+        setDateTime('')
+      })
+      .catch(err => console.error('Error posting entry:', err))
   }
 
   return (
