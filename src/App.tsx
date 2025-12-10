@@ -129,7 +129,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home entries={entries} setEntries={setEntries} setCount={setCount} />} />
-        <Route path="/readings" element={<ReadingsPage entries={entries} onBack={() => window.history.back()} />} />
+        <Route path="/readings" element={<ReadingsPage onBack={() => window.history.back()} />} />
       </Routes>
 
       {/* a simple footer showing total added */}
