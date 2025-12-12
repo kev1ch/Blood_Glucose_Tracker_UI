@@ -12,6 +12,9 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // ids currently being deleted
+  const [deletingIds, setDeletingIds] = useState<number[]>([])
+
   const fetchEntries = async () => {
     setLoading(true)
     setError(null)
@@ -49,6 +52,27 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
     }
   }
 
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Delete this reading?')) return
+    setDeletingIds(prev => [...prev, id])
+    console.log(`Sending DELETE /api/entries/${id}`)
+    try {
+      const res = await fetch(`http://localhost:8080/api/entries/${id}`, {
+        method: 'DELETE',
+        headers: { Accept: '*/*' },
+      })
+      console.log(`DELETE response: ${res.status} ${res.statusText}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      // remove from state on success
+      setEntries(prev => prev.filter(e => e.id !== id))
+    } catch (err: any) {
+      console.error('Error deleting entry:', err)
+      setError(err?.message ?? String(err))
+    } finally {
+      setDeletingIds(prev => prev.filter(x => x !== id))
+    }
+  }
+
   useEffect(() => {
     fetchEntries()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,6 +106,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
               <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Time</th>
               <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>Glucose (mg/dL)</th>
               <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'center' }}> </th>
             </tr>
           </thead>
           <tbody>
@@ -90,6 +115,23 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                 <td style={{ border: '1px solid #eee', padding: 8 }}>{formatTime(e.ts)}</td>
                 <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'right' }}>{e.glucose}</td>
                 <td style={{ border: '1px solid #eee', padding: 8 }}>{e.note}</td>
+                <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(e.id)}
+                    disabled={deletingIds.includes(e.id)}
+                    aria-label={`Delete reading ${e.id}`}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'red',
+                      cursor: deletingIds.includes(e.id) ? 'not-allowed' : 'pointer',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {deletingIds.includes(e.id) ? '…' : '✕'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
