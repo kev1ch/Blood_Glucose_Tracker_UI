@@ -15,8 +15,17 @@ function Home({
 }) {
   const [glucose, setGlucose] = useState<string>('')
   const [note, setNote] = useState<string>('')
+  const [punctureSpot, setPunctureSpot] = useState<string>('')
   const [dateTime, setDateTime] = useState<string>('')
   const navigate = useNavigate()
+
+  // build puncture options: Hand (L/R) x Finger (1-5) x Side (L/C/R)
+  const punctureOptions: string[] = []
+  ;['L', 'R'].forEach(h => {
+    [1, 2, 3, 4, 5].forEach(f => {
+      ['L', 'C', 'R'].forEach(s => punctureOptions.push(`${h}${f}${s}`))
+    })
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     alert('Debug: handleSubmit called')
@@ -30,13 +39,14 @@ function Home({
       if (!isNaN(parsed)) ts = parsed
     }
 
-    const entry: Entry = { id: Date.now(), glucose: Number(glucose), note, ts }
-    
-    const payload = {
+    const entry: Entry = { id: Date.now(), glucose: Number(glucose), note, punctureSpot, ts }
+
+    const payload: any = {
       value: Number(glucose),
       timestamp: new Date(ts).toISOString(),
       description: note,
     }
+    if (punctureSpot.trim() !== '') payload.punctureSpot = punctureSpot
     console.log('Sending POST request with payload:', payload)
 
     // POST to backend
@@ -46,11 +56,7 @@ function Home({
         'Accept': '*/*',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        value: Number(glucose),
-        timestamp: new Date(ts).toISOString(),
-        description: note,
-      }),
+      body: JSON.stringify(payload),
     })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -63,6 +69,7 @@ function Home({
         setGlucose('')
         setNote('')
         setDateTime('')
+        setPunctureSpot('')
       })
       .catch(err => console.error('Error posting entry:', err))
   }
@@ -95,6 +102,20 @@ function Home({
               placeholder="e.g. before breakfast"
               style={{ marginLeft: 8 }}
             />
+          </label>
+        </div>
+
+        <div style={{ marginTop: 8 }}>
+          <label>
+            Puncture (optional):
+            <select value={punctureSpot} onChange={e => setPunctureSpot(e.target.value)} style={{ marginLeft: 8 }}>
+              <option value="">--</option>
+              {punctureOptions.map(p => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
 

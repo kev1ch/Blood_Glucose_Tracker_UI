@@ -4,6 +4,7 @@ export type Entry = {
   id: number
   glucose: number
   note: string
+  punctureSpot: string
   ts: number
 }
 
@@ -37,6 +38,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
           id: typeof item.id === 'number' ? item.id : ts + idx,
           glucose: Number(item.value ?? item.glucose ?? 0),
           note: item.description ?? item.note ?? '',
+          punctureSpot: item.punctureSpot ?? item.puncture ?? item.punctureType ?? '',
           ts,
         }
       })
@@ -103,10 +105,11 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Time</th>
-              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>Glucose (mg/dL)</th>
-              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
-              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'center' }}> </th>
+                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Time</th>
+                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>Glucose (mg/dL)</th>
+                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
+                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Puncture Spot</th>
+                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'center' }}> </th>
             </tr>
           </thead>
           <tbody>
@@ -115,6 +118,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                 <td style={{ border: '1px solid #eee', padding: 8 }}>{formatTime(e.ts)}</td>
                 <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'right' }}>{e.glucose}</td>
                 <td style={{ border: '1px solid #eee', padding: 8 }}>{e.note}</td>
+                  <td style={{ border: '1px solid #eee', padding: 8 }}>{e.punctureSpot}</td>
                 <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'center' }}>
                   <button
                     type="button"
