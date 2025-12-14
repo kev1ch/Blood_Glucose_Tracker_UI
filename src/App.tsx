@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import ReadingsPage from './ReadingsPage'
@@ -26,6 +26,33 @@ function Home({
       ['L', 'C', 'R'].forEach(s => punctureOptions.push(`${h}${f}${s}`))
     })
   })
+
+  const [recommendedSpots, setRecommendedSpots] = useState<string[]>([])
+  const [recommendedError, setRecommendedError] = useState<string | null>(null)
+
+  const fetchRecommendedSpots = async () => {
+    setRecommendedError(null)
+    try {
+      console.log('Fetching recommended puncture spots...')
+      const res = await fetch('http://localhost:8080/api/entries/recommended-spots', {
+        method: 'GET',
+        headers: { Accept: '*/*' },
+      })
+      console.log(`GET /api/entries/recommended-spots: ${res.status} ${res.statusText}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setRecommendedSpots(Array.isArray(data) ? data.map(String) : [])
+    } catch (err: any) {
+      console.error('Error fetching recommended spots:', err)
+      setRecommendedError(err?.message ?? String(err))
+      setRecommendedSpots([])
+    }
+  }
+
+  useEffect(() => {
+    fetchRecommendedSpots()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     alert('Debug: handleSubmit called')
@@ -105,9 +132,9 @@ function Home({
           </label>
         </div>
 
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
           <label>
-            Puncture (optional):
+            Puncture Spot (optional):
             <select value={punctureSpot} onChange={e => setPunctureSpot(e.target.value)} style={{ marginLeft: 8 }}>
               <option value="">--</option>
               {punctureOptions.map(p => (
@@ -117,6 +144,15 @@ function Home({
               ))}
             </select>
           </label>
+
+          <div style={{ color: '#666', fontSize: '0.9em' }}>
+            <div style={{ fontWeight: 600 }}>Recommended:</div>
+            {recommendedError ? (
+              <div style={{ color: 'crimson' }}>Error loading</div>
+            ) : (
+              <div>{recommendedSpots.length ? recommendedSpots.join(', ') : '—'}</div>
+            )}
+          </div>
         </div>
 
         <div style={{ marginTop: 8 }}>
