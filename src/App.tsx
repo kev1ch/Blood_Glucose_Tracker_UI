@@ -54,6 +54,9 @@ function Home({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // only display up to 5 recommended spots
+  const recommendedDisplay = recommendedSpots.slice(0, 5)
+
   const handleSubmit = (e: React.FormEvent) => {
     alert('Debug: handleSubmit called')
     console.log('Submitting new glucose entry')
@@ -150,7 +153,15 @@ function Home({
             {recommendedError ? (
               <div style={{ color: 'crimson' }}>Error loading</div>
             ) : (
-              <div>{recommendedSpots.length ? recommendedSpots.join(', ') : '—'}</div>
+              <div>
+                {recommendedDisplay.length ? (
+                  <>
+                    {recommendedDisplay.join(', ')}
+                  </>
+                ) : (
+                  '—'
+                )}
+              </div>
             )}
           </div>
         </div>
