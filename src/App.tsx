@@ -100,6 +100,8 @@ function Home({
         setNote('')
         setDateTime('')
         setPunctureSpot('')
+        // refresh recommended spots after a successful submit
+        fetchRecommendedSpots()
       })
       .catch(err => console.error('Error posting entry:', err))
   }
