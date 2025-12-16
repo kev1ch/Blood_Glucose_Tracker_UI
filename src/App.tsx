@@ -19,11 +19,11 @@ function Home({
   const [dateTime, setDateTime] = useState<string>('')
   const navigate = useNavigate()
 
-  // build puncture options: Hand (L/R) x Finger (1-5) x Side (L/C/R)
+  // build puncture options: Hand (L/R) x Finger (1-5) x Side (L/R)
   const punctureOptions: string[] = []
   ;['L', 'R'].forEach(h => {
     [1, 2, 3, 4, 5].forEach(f => {
-      ['L', 'C', 'R'].forEach(s => punctureOptions.push(`${h}${f}${s}`))
+      ['L', 'R'].forEach(s => punctureOptions.push(`${h}${f}${s}`))
     })
   })
 
