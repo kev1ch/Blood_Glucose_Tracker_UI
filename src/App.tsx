@@ -56,6 +56,24 @@ function Home({
 
   // only display up to 5 recommended spots
   const recommendedDisplay = recommendedSpots.slice(0, 5)
+  // decode a puncture spot code into a human-friendly label
+  const decodeSpot = (spot: string) => {
+    if (!spot || spot.length < 3) return spot
+    const handMap: Record<string, string> = { L: 'Left hand', R: 'Right hand' }
+    const fingerMap: Record<string, string> = {
+      '1': 'Thumb',
+      '2': 'Index finger',
+      '3': 'Middle finger',
+      '4': 'Ring finger',
+      '5': 'Pinky finger',
+    }
+    const sideMap: Record<string, string> = { L: 'Left side', C: 'Center', R: 'Right side' }
+    const [h, f, s] = spot
+    const hand = handMap[h] ?? h
+    const finger = fingerMap[f] ?? f
+    const side = sideMap[s] ?? s
+    return `${hand} ${finger} ${side}`
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     alert('Debug: handleSubmit called')
@@ -157,9 +175,7 @@ function Home({
             ) : (
               <div>
                 {recommendedDisplay.length ? (
-                  <>
-                    {recommendedDisplay.join(', ')}
-                  </>
+                  <>{recommendedDisplay.map(s => decodeSpot(s)).join(', ')}</>
                 ) : (
                   '—'
                 )}
