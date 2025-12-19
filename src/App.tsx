@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import ReadingsPage from './ReadingsPage'
+import HandSelector from './components/HandSelector'
 import type { Entry } from './ReadingsPage'
 
 function Home({
@@ -168,7 +169,7 @@ function Home({
             </select>
           </label>
 
-          <div style={{ color: '#666', fontSize: '0.9em' }}>
+          <div style={{ color: '#666', fontSize: '0.9em', marginTop: 8 }}>
             <div style={{ fontWeight: 600 }}>Recommended:</div>
             {recommendedError ? (
               <div style={{ color: 'crimson' }}>Error loading</div>
@@ -182,6 +183,11 @@ function Home({
               </div>
             )}
           </div>
+        </div>
+
+        {/* Hand selector beneath the recommended spots label */}
+        <div style={{ marginTop: 20, marginBottom: 20 }}>
+          <HandSelector />
         </div>
 
         <div style={{ marginTop: 8 }}>

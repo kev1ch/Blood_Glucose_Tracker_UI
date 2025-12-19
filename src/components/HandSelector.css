@@ -1,0 +1,38 @@
+.hg-hand-selector {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.hg-hands-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.hg-hand-container {
+  width: 300px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hg-hand-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hg-hand-container.expanded {
+  transform: scale(1.35);
+  z-index: 2;
+}
+
+.hg-hand-container.minimized {
+  transform: scale(0.6);
+  opacity: 0.25;
+}
