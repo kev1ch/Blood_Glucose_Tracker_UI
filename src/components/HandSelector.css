@@ -1,22 +1,31 @@
+
 .hg-hand-selector {
-  display: flex;
-  justify-content: center;
+  display: block;
   margin-top: 1rem;
 }
 
+/* Use a 3-column grid so selected hand can move to center without overlapping content */
 .hg-hands-row {
-  display: flex;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
+  gap: 12px;
+    /* reserve space for expanded hand to avoid overlapping text; responsive
+      increased to match wider hand container (350px) */
+    min-height: clamp(240px, 30vw, 520px);
 }
 
 .hg-hand-container {
-  width: 300px;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  width: 350px;
+  /* only animate transform and opacity to avoid reflow */
+  transition: transform 280ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease;
+  will-change: transform, opacity;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
+  transform-origin: center center;
 }
 
 .hg-hand-img {
@@ -27,12 +36,22 @@
   pointer-events: none;
 }
 
-.hg-hand-container.expanded {
-  transform: scale(1.35);
-  z-index: 2;
+/* Default look: muted via reduced opacity (no greyscale filter) */
+.hg-hand-container:not(.selected) .hg-hand-img {
+  filter: none;
+  opacity: 0.6;
 }
 
-.hg-hand-container.minimized {
-  transform: scale(0.6);
-  opacity: 0.25;
-}
+/* Selected hand moves to the center column and becomes darker */
+.hg-hand-container.left { grid-column: 1; }
+.hg-hand-container.right { grid-column: 3; }
+.hg-hand-container.selected { grid-column: 2; transform: scale(1.25); z-index: 2; }
+.hg-hand-container.selected .hg-hand-img { filter: none; opacity: 1; }
+
+/* Non-selected (off) appearance: slightly smaller via transform + lowered opacity */
+.hg-hand-container.off { transform: scale(0.8); opacity: 0.55; }
+.hg-hand-container.off .hg-hand-img { filter: none; opacity: 0.55; }
+
+/* When no selection, ensure both hands look full-size but slightly faded */
+.hg-hands-row:not(.has-selection) .hg-hand-container { transform: scale(1); }
+
