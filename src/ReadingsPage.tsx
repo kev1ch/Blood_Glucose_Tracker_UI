@@ -15,13 +15,18 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
 
   // ids currently being deleted
   const [deletingIds, setDeletingIds] = useState<number[]>([])
+  // current sortBy value sent to backend (defaults to timestamp_desc)
+  const [sortBy, setSortBy] = useState<string>('timestamp_desc')
 
-  const fetchEntries = async () => {
+  const fetchEntries = async (sb?: string) => {
     setLoading(true)
     setError(null)
     try {
       console.log('Fetching entries from backend...')
-      const res = await fetch('http://localhost:8080/api/entries', {
+      const sortParam = sb ?? sortBy
+      const url = `http://localhost:8080/api/entries${sortParam ? `?sortBy=${encodeURIComponent(sortParam)}` : ''}`
+      console.log('GET', url)
+      const res = await fetch(url, {
         method: 'GET',
         headers: { Accept: '*/*' },
       })
@@ -44,7 +49,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
       })
 
       // sort by ts descending (most recent first)
-      mapped.sort((a, b) => b.ts - a.ts)
+      //mapped.sort((a, b) => b.ts - a.ts)
       setEntries(mapped)
     } catch (err: any) {
       console.error('Error fetching entries:', err)
@@ -87,9 +92,34 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
       <h2>Readings</h2>
       <div style={{ marginBottom: 12 }}>
         <button onClick={onBack}>Back</button>
-        <button onClick={fetchEntries} style={{ marginLeft: 8 }}>
+        <button onClick={() => fetchEntries()} style={{ marginLeft: 8 }}>
           Refresh
         </button>
+
+        {/* sorting buttons */}
+        <div style={{ display: 'inline-block', marginLeft: 12 }}>
+          <span style={{ marginRight: 8, fontWeight: 600 }}>Sort:</span>
+          {[
+            { key: 'timestamp_desc', label: 'Time ↓' },
+            { key: 'timestamp_asc', label: 'Time ↑' },
+            { key: 'value_desc', label: 'Glucose ↓' },
+            { key: 'value_asc', label: 'Glucose ↑' },
+          ].map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => {
+                setSortBy(opt.key)
+                fetchEntries(opt.key)
+              }}
+              style={{
+                marginLeft: 6,
+                fontWeight: sortBy === opt.key ? 700 : 400,
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && <p>Loading...</p>}
