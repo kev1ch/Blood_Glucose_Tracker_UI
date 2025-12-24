@@ -96,30 +96,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
           Refresh
         </button>
 
-        {/* sorting buttons */}
-        <div style={{ display: 'inline-block', marginLeft: 12 }}>
-          <span style={{ marginRight: 8, fontWeight: 600 }}>Sort:</span>
-          {[
-            { key: 'timestamp_desc', label: 'Time ↓' },
-            { key: 'timestamp_asc', label: 'Time ↑' },
-            { key: 'value_desc', label: 'Glucose ↓' },
-            { key: 'value_asc', label: 'Glucose ↑' },
-          ].map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => {
-                setSortBy(opt.key)
-                fetchEntries(opt.key)
-              }}
-              style={{
-                marginLeft: 6,
-                fontWeight: sortBy === opt.key ? 700 : 400,
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* sort controls moved into table headers */}
       </div>
 
       {loading && <p>Loading...</p>}
@@ -135,11 +112,57 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
-                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Time</th>
-                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>Glucose (mg/dL)</th>
-                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
-                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Puncture Spot</th>
-                <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'center' }}> </th>
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>
+                Time
+                <button
+                  aria-label="Sort time descending"
+                  onClick={() => {
+                    setSortBy('timestamp_desc')
+                    fetchEntries('timestamp_desc')
+                  }}
+                  style={{ marginLeft: 8, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
+                >
+                  ▼
+                </button>
+                <button
+                  aria-label="Sort time ascending"
+                  onClick={() => {
+                    setSortBy('timestamp_asc')
+                    fetchEntries('timestamp_asc')
+                  }}
+                  style={{ marginLeft: 4, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
+                >
+                  ▲
+                </button>
+              </th>
+
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'right' }}>
+                Glucose (mg/dL)
+                <button
+                  aria-label="Sort glucose descending"
+                  onClick={() => {
+                    setSortBy('value_desc')
+                    fetchEntries('value_desc')
+                  }}
+                  style={{ marginLeft: 8, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
+                >
+                  ▼
+                </button>
+                <button
+                  aria-label="Sort glucose ascending"
+                  onClick={() => {
+                    setSortBy('value_asc')
+                    fetchEntries('value_asc')
+                  }}
+                  style={{ marginLeft: 4, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
+                >
+                  ▲
+                </button>
+              </th>
+
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Note</th>
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>Puncture Spot</th>
+              <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'center' }}> </th>
             </tr>
           </thead>
           <tbody>
