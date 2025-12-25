@@ -17,14 +17,24 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
   const [deletingIds, setDeletingIds] = useState<number[]>([])
   // current sortBy value sent to backend (defaults to timestamp_desc)
   const [sortBy, setSortBy] = useState<string>('timestamp_desc')
+  // pagination
+  const [page, setPage] = useState<number>(1)
+  const [size, setSize] = useState<number>(5)
+  const [hasMore, setHasMore] = useState<boolean>(false)
 
-  const fetchEntries = async (sb?: string) => {
+  const fetchEntries = async (sb?: string, p?: number, s?: number) => {
     setLoading(true)
     setError(null)
     try {
       console.log('Fetching entries from backend...')
       const sortParam = sb ?? sortBy
-      const url = `http://localhost:8080/api/entries${sortParam ? `?sortBy=${encodeURIComponent(sortParam)}` : ''}`
+      const pageParam = p ?? page
+      const sizeParam = s ?? size
+      const params = new URLSearchParams()
+      if (sortParam) params.set('sortBy', sortParam)
+      if (pageParam) params.set('page', String(pageParam))
+      if (sizeParam) params.set('size', String(sizeParam))
+      const url = `http://localhost:8080/api/entries${params.toString() ? `?${params.toString()}` : ''}`
       console.log('GET', url)
       const res = await fetch(url, {
         method: 'GET',
@@ -51,6 +61,8 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
       // sort by ts descending (most recent first)
       //mapped.sort((a, b) => b.ts - a.ts)
       setEntries(mapped)
+      // If returned items length equals requested size, assume there may be more
+      setHasMore(mapped.length >= (s ?? size))
     } catch (err: any) {
       console.error('Error fetching entries:', err)
       setError(err?.message ?? String(err))
@@ -95,8 +107,6 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
         <button onClick={() => fetchEntries()} style={{ marginLeft: 8 }}>
           Refresh
         </button>
-
-        {/* sort controls moved into table headers */}
       </div>
 
       {loading && <p>Loading...</p>}
@@ -118,7 +128,8 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                   aria-label="Sort time descending"
                   onClick={() => {
                     setSortBy('timestamp_desc')
-                    fetchEntries('timestamp_desc')
+                    setPage(1)
+                    fetchEntries('timestamp_desc', 1, size)
                   }}
                   style={{ marginLeft: 8, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
                 >
@@ -128,7 +139,8 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                   aria-label="Sort time ascending"
                   onClick={() => {
                     setSortBy('timestamp_asc')
-                    fetchEntries('timestamp_asc')
+                    setPage(1)
+                    fetchEntries('timestamp_asc', 1, size)
                   }}
                   style={{ marginLeft: 4, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
                 >
@@ -142,7 +154,8 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                   aria-label="Sort glucose descending"
                   onClick={() => {
                     setSortBy('value_desc')
-                    fetchEntries('value_desc')
+                    setPage(1)
+                    fetchEntries('value_desc', 1, size)
                   }}
                   style={{ marginLeft: 8, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
                 >
@@ -152,7 +165,8 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
                   aria-label="Sort glucose ascending"
                   onClick={() => {
                     setSortBy('value_asc')
-                    fetchEntries('value_asc')
+                    setPage(1)
+                    fetchEntries('value_asc', 1, size)
                   }}
                   style={{ marginLeft: 4, fontSize: '0.8em', padding: '2px 4px', cursor: 'pointer' }}
                 >
@@ -193,6 +207,57 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* pagination controls */}
+      {!loading && entries.length > 0 && (
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                if (page <= 1) return
+                const newPage = page - 1
+                setPage(newPage)
+                fetchEntries(undefined, newPage, size)
+              }}
+              disabled={page <= 1}
+            >
+              Prev
+            </button>
+            <div>Page {page}</div>
+            <button
+              onClick={() => {
+                if (!hasMore) return
+                const newPage = page + 1
+                setPage(newPage)
+                fetchEntries(undefined, newPage, size)
+              }}
+              disabled={!hasMore}
+            >
+              Next
+            </button>
+          </div>
+
+          <div>
+            <label>
+              Page size:
+              <select
+                value={size}
+                onChange={e => {
+                  const newSize = Number(e.target.value)
+                  setSize(newSize)
+                  setPage(1)
+                  fetchEntries(undefined, 1, newSize)
+                }}
+                style={{ marginLeft: 6 }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+            </label>
+          </div>
+        </div>
       )}
     </div>
   )
