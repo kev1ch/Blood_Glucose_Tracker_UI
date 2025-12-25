@@ -22,6 +22,10 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
   const [size, setSize] = useState<number>(5)
   const [hasMore, setHasMore] = useState<boolean>(false)
 
+  // time interval filter (client-side)
+  const [startTs, setStartTs] = useState<number | null>(null)
+  const [endTs, setEndTs] = useState<number | null>(null)
+
   const fetchEntries = async (sb?: string, p?: number, s?: number) => {
     setLoading(true)
     setError(null)
@@ -99,6 +103,27 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
 
   const formatTime = (ts: number) => new Date(ts).toLocaleString()
 
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+  const tsToInput = (ts: number | null) => {
+    if (!ts) return ''
+    const d = new Date(ts)
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(
+      d.getHours(),
+    )}:${pad2(d.getMinutes())}`
+  }
+  const inputToTs = (val: string) => {
+    if (!val) return null
+    const t = Date.parse(val)
+    return Number.isNaN(t) ? null : t
+  }
+
+  // apply client-side filtering based on selected interval
+  const visibleEntries = entries.filter(e => {
+    if (startTs && e.ts < startTs) return false
+    if (endTs && e.ts > endTs) return false
+    return true
+  })
+
   return (
     <div style={{ padding: 20 }}>
       <h2>Readings</h2>
@@ -107,6 +132,50 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
         <button onClick={() => fetchEntries()} style={{ marginLeft: 8 }}>
           Refresh
         </button>
+      </div>
+
+      {/* interval filter controls */}
+      <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          From:
+          <input
+            type="datetime-local"
+            value={tsToInput(startTs)}
+            onChange={e => setStartTs(inputToTs(e.target.value))}
+          />
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          To:
+          <input type="datetime-local" value={tsToInput(endTs)} onChange={e => setEndTs(inputToTs(e.target.value))} />
+        </label>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => {
+              const now = Date.now()
+              setStartTs(now - 24 * 60 * 60 * 1000)
+              setEndTs(now)
+            }}
+          >
+            Last 24h
+          </button>
+          <button
+            onClick={() => {
+              const now = Date.now()
+              setStartTs(now - 7 * 24 * 60 * 60 * 1000)
+              setEndTs(now)
+            }}
+          >
+            Last 7d
+          </button>
+          <button
+            onClick={() => {
+              setStartTs(null)
+              setEndTs(null)
+            }}
+          >
+            All
+          </button>
+        </div>
       </div>
 
       {loading && <p>Loading...</p>}
@@ -119,7 +188,9 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
       {!loading && entries.length === 0 && <p>No entries yet.</p>}
 
       {!loading && entries.length > 0 && (
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <>
+          <div style={{ marginBottom: 8 }}>Showing {visibleEntries.length} of {entries.length} entries</div>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
               <th style={{ border: '1px solid #ccc', padding: 8, textAlign: 'left' }}>
@@ -180,33 +251,42 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
             </tr>
           </thead>
           <tbody>
-            {entries.map(e => (
-              <tr key={e.id}>
-                <td style={{ border: '1px solid #eee', padding: 8 }}>{formatTime(e.ts)}</td>
-                <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'right' }}>{e.glucose}</td>
-                <td style={{ border: '1px solid #eee', padding: 8 }}>{e.note}</td>
-                  <td style={{ border: '1px solid #eee', padding: 8 }}>{e.punctureSpot}</td>
-                <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(e.id)}
-                    disabled={deletingIds.includes(e.id)}
-                    aria-label={`Delete reading ${e.id}`}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'red',
-                      cursor: deletingIds.includes(e.id) ? 'not-allowed' : 'pointer',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {deletingIds.includes(e.id) ? '…' : '✕'}
-                  </button>
+            {visibleEntries.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ padding: 12, textAlign: 'center' }}>
+                  No entries in selected interval.
                 </td>
               </tr>
-            ))}
+            ) : (
+              visibleEntries.map(e => (
+                <tr key={e.id}>
+                  <td style={{ border: '1px solid #eee', padding: 8 }}>{formatTime(e.ts)}</td>
+                  <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'right' }}>{e.glucose}</td>
+                  <td style={{ border: '1px solid #eee', padding: 8 }}>{e.note}</td>
+                  <td style={{ border: '1px solid #eee', padding: 8 }}>{e.punctureSpot}</td>
+                  <td style={{ border: '1px solid #eee', padding: 8, textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(e.id)}
+                      disabled={deletingIds.includes(e.id)}
+                      aria-label={`Delete reading ${e.id}`}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'red',
+                        cursor: deletingIds.includes(e.id) ? 'not-allowed' : 'pointer',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {deletingIds.includes(e.id) ? '…' : '✕'}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+        </>
       )}
 
       {/* pagination controls */}
