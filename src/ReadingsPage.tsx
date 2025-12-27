@@ -21,6 +21,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
   const [page, setPage] = useState<number>(1)
   const [size, setSize] = useState<number>(5)
   const [hasMore, setHasMore] = useState<boolean>(false)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
 
   // time interval filter (client-side)
   const [startTs, setStartTs] = useState<number | null>(null)
@@ -46,6 +47,10 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
       })
       console.log(`GET /api/entries response: ${res.status} ${res.statusText}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      // read total count from response header if present
+      console.log('Response headers:', [...res.headers])
+      const totalHeader = res.headers.get('X-Total-Count')
+      setTotalCount(totalHeader ? Number(totalHeader) : null)
       const data = await res.json()
       console.log('GET /api/entries body:', data)
 
@@ -189,7 +194,7 @@ export default function ReadingsPage({ onBack }: { onBack: () => void }) {
 
       {!loading && entries.length > 0 && (
         <>
-          <div style={{ marginBottom: 8 }}>Showing {visibleEntries.length} of {entries.length} entries</div>
+          <div style={{ marginBottom: 8 }}>Showing {visibleEntries.length} of {totalCount ?? entries.length} entries</div>
           <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
