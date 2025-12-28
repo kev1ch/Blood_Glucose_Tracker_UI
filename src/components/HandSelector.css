@@ -36,6 +36,33 @@
   pointer-events: none;
 }
 
+/* container that clips and positions overlay buttons */
+.hg-hand-clip {
+  position: relative;
+  width: 100%;
+}
+
+/* small circular spot buttons positioned absolutely over the image */
+.hg-spot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.4);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.12) inset;
+}
+
+.hg-spot:hover { transform: translate(-50%, -50%) scale(1.15); }
+.hg-spot:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.25); }
+.hg-spot.selected { background: #0b84ff; border-color: #ffffff; box-shadow: 0 4px 10px rgba(11,132,255,0.25); }
+
+/* slightly larger spots when hand is selected (to improve hit area) */
+.hg-hand-container.selected .hg-spot { width: 22px; height: 22px }
+
 /* Default look: muted via reduced opacity (no greyscale filter) */
 .hg-hand-container:not(.selected) .hg-hand-img {
   filter: none;

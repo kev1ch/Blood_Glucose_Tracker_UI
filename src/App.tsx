@@ -187,7 +187,7 @@ function Home({
 
         {/* Hand selector beneath the recommended spots label */}
         <div style={{ marginTop: 20, marginBottom: 20 }}>
-          <HandSelector />
+          <HandSelector selectedSpot={punctureSpot} onSpotSelect={s => setPunctureSpot(s ?? '')} />
         </div>
 
         <div style={{ marginTop: 8 }}>
