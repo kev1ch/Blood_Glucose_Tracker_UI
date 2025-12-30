@@ -47,6 +47,11 @@
   position: absolute;
   width: 18px;
   height: 18px;
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 0;
+  display: inline-block;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.9);
   background: rgba(0,0,0,0.4);
