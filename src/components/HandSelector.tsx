@@ -13,8 +13,8 @@ interface Props {
   onSpotSelect?: (spot: string | null) => void
 }
 
-// small helper to build codes like L1L, R3C, etc
-const buildCode = (handChar: 'L' | 'R', finger: number, side: string) => `${handChar}${finger}${side}`
+// small helper to build codes like L1L, R3R etc - using narrow literal types for safety
+const buildCode = (handChar: 'L' | 'R', finger: 1 | 2 | 3 | 4 | 5, side: 'L' | 'R') => `${handChar}${finger}${side}`
 
 const HandSelector: React.FC<Props> = ({ initialHand = null, onHandSelect, selectedSpot = null, onSpotSelect }) => {
   const [selectedHand, setSelectedHand] = useState<Hand | null>(initialHand)
@@ -34,7 +34,7 @@ const HandSelector: React.FC<Props> = ({ initialHand = null, onHandSelect, selec
   // positions are imported from `handSpots.ts` so they can be calibrated independently
 
   // only left and right sides (no center spots)
-  const sides = ['L', 'R']
+  const sides = ['L', 'R'] as const
 
   const renderHand = (hand: Hand) => {
     const handChar = hand === 'left' ? 'L' : 'R'
@@ -57,7 +57,7 @@ const HandSelector: React.FC<Props> = ({ initialHand = null, onHandSelect, selec
           {positions.map((pos, idx) => (
             <React.Fragment key={idx}>
               {sides.map(side => {
-                const code = buildCode(handChar as 'L' | 'R', idx + 1, side)
+                const code = buildCode(handChar as 'L' | 'R', (idx + 1) as 1 | 2 | 3 | 4 | 5, side)
                 // adjust x offset slightly for side: L -> -6, R -> +6
                 const sideOffset = side === 'L' ? -6 : 6
                 const left = `calc(${pos.x}% + ${sideOffset}px)`
