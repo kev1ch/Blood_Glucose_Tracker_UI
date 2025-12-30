@@ -59,7 +59,7 @@ const HandSelector: React.FC<Props> = ({ initialHand = null, onHandSelect, selec
               {sides.map(side => {
                 const code = buildCode(handChar as 'L' | 'R', (idx + 1) as 1 | 2 | 3 | 4 | 5, side)
                 // adjust x offset slightly for side: L -> -6, R -> +6
-                const sideOffset = side === 'L' ? -6 : 6
+                const sideOffset = side === 'L' ? -9 : 9
                 const left = `calc(${pos.x}% + ${sideOffset}px)`
                 const top = `${pos.y}%`
                 const isSelected = selectedSpot === code
